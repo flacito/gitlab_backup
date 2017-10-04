@@ -1,7 +1,7 @@
 set -e
 
 echo "export DOCKER_STACK_NAME=$DOCKER_STACK_NAME" > /container/backup.env
-echo "export DOCKER_STACK_NAME=$DOCKER_GITLAB_CONTAINER_NAME" >> /container/backup.env
+echo "export DOCKER_GITLAB_CONTAINER_NAME=$DOCKER_GITLAB_CONTAINER_NAME" >> /container/backup.env
 echo "configured Docker enviornment for GitLab backups"
 cat /container/backup.env
 
