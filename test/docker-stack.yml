@@ -39,7 +39,7 @@ services:
       - type: tmpfs
         target: /var/opt/gitlab/git-data
       - type: tmpfs
-        target: /var/log/gitlabź
+        target: /var/log/gitlab
       - type: volume
         source: gitlab_backup
         target: /var/opt/gitlab/backups/
