@@ -49,7 +49,7 @@ resource "null_resource" "testit" {
   provisioner "local-exec" {
     command = <<EOF
       counter=1
-      until curl -s -f  http://localhost:8500/help >/dev/null
+      until curl -s -f  http://localhost:8500/help 
       do
         printf 'gitlab not online yet, sleeping 5 seconds...'
         sleep 5
