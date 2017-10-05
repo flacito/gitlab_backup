@@ -62,7 +62,7 @@ resource "null_resource" "testit" {
       echo "CONTID=$${CONTID}"
 
       echo "GitLab backup container $${CONTID} online. Sleeping 65 seconds to wait for a backup to take place."
-      # sleep 65
+      sleep 65
       mkdir -p ./.test
       docker cp $CONTID:/var/opt/gitlab/backups ./.test
       set -e
