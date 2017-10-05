@@ -1,0 +1,70 @@
+version: '3.3'
+
+volumes:
+  gitlab_backup:
+
+networks:
+  frontend:
+    driver: "overlay"
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ee:latest
+    restart: always
+    depends_on:
+      - postgresql
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://localhost:8500'
+        gitlab_rails['initial_root_password'] = 'rootorius'
+        nginx['listen_port'] = 80
+
+        # Have to set unicorn socket to shorter path for it to work on Mac
+        unicorn['socket'] = '/var/opt/gitlab/gitlab.socket'
+    volumes:
+      - type: tmpfs
+        target: /var/opt/gitlab
+      - type: tmpfs
+        target: /tmp/gitlab_metrics
+      - type: tmpfs
+        target: /etc/gitlab
+      - type: tmpfs
+        target: /var/opt/gitlab/.ssh
+      - type: tmpfs
+        target: /var/opt/gitlab/gitlab-rails/uploads
+      - type: tmpfs
+        target: /var/opt/gitlab/gitlab-rails/shared
+      - type: tmpfs
+        target: /var/opt/gitlab/gitlab-ci/builds
+      - type: tmpfs
+        target: /var/opt/gitlab/git-data
+      - type: tmpfs
+        target: /var/log/gitlabź
+      - type: volume
+        source: gitlab_backup
+        target: /var/opt/gitlab/backups/
+    networks:
+      - frontend
+    ports:
+      - target: 80
+        published: 8500
+        protocol: tcp
+        mode: host
+    healthcheck:
+      disable: true
+
+  backup:
+    image: flacito/gitlab-backup:latest
+    restart: always
+    depends_on:
+      - gitlab
+    networks:
+      - frontend
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DOCKER_STACK_NAME: testglback
+      GITLAB_BACKUP_CRON_SCHEDULE: '* * * * *'
+      DOCKER_GITLAB_CONTAINER_NAME: gitlab
+    healthcheck:
+      disable: true
