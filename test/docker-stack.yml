@@ -54,7 +54,7 @@ services:
       disable: true
 
   backup:
-    image: flacito/gitlab-backup:latest
+    image: flacito/gitlab_backup:latest
     restart: always
     depends_on:
       - gitlab

@@ -3,7 +3,12 @@ variable docker_stack_name { default = "testglback" }
 resource "null_resource" "docker_build" {
 
     provisioner "local-exec" {
-      command = "docker build -t postgresbup ../"
+      command = "docker build -t flacito/gitlab_backup:latest ../"
+    }
+
+    provisioner "local-exec" {
+      command = "docker rmi flacito/gitlab_backup:latest"
+      when = "destroy"
     }
 
 }
