@@ -1,13 +1,15 @@
 variable docker_stack_name { default = "testglback" }
+variable gitlab_backup_priv_key_file { default = "~/.gitlab/id_rsa.pem" }
+variable gitlab_backup_pub_key_file { default = "~/.gitlab/id_rsa.pub.pem" }
 
 resource "null_resource" "docker_build" {
 
     provisioner "local-exec" {
-      command = "docker build -t flacito/gitlab_backup:latest ../"
+      command = "docker build -t localtest/gitlab_backup:latest ../"
     }
 
     provisioner "local-exec" {
-      command = "docker rmi flacito/gitlab_backup:latest"
+      command = "docker rmi localtest/gitlab_backup:latest"
       when = "destroy"
     }
 
@@ -26,6 +28,24 @@ resource "null_resource" "docker_swarm" {
 
 }
 
+resource "null_resource" "docker_secrets" {
+
+    provisioner "local-exec" {
+      command = <<EOF
+        docker secret create gitlab_backup_pub_key ${var.gitlab_backup_pub_key_file}
+EOF
+    }
+
+    provisioner "local-exec" {
+      command = <<EOF
+        docker secret rm gitlab_backup_pub_key
+EOF
+      when = "destroy"
+    }
+
+        depends_on = ["null_resource.docker_swarm"]
+}
+
 resource "null_resource" "docker_stack" {
 
     provisioner "local-exec" {
@@ -41,7 +61,7 @@ EOF
       when = "destroy"
     }
 
-    depends_on = [ "null_resource.docker_swarm", "null_resource.docker_build" ]
+    depends_on = [ "null_resource.docker_swarm", "null_resource.docker_build", "null_resource.docker_secrets" ]
 }
 
 resource "null_resource" "testit" {
@@ -49,7 +69,7 @@ resource "null_resource" "testit" {
   provisioner "local-exec" {
     command = <<EOF
       counter=1
-      until curl -s -f  http://localhost:8500/help 
+      until curl -s -f  http://localhost:8500/help
       do
         printf 'gitlab not online yet, sleeping 5 seconds...'
         sleep 5
@@ -71,8 +91,21 @@ resource "null_resource" "testit" {
       mkdir -p ./.test
       docker cp $CONTID:/var/opt/gitlab/backups ./.test
       set -e
+      set -x
       ls ./.test/backups/*.tar
       printf 'GitLab has backups!'
+
+      GITLAB_BACKUP_FILE_LISTING=$(ls -Art ./.test/backups/*.tar | tr '\n' '\0' | xargs -0 -n 1 | tail -n 1)
+      GITLAB_BACKUP_NAME="$${GITLAB_BACKUP_FILE_LISTING##*/}"
+      echo "Testing $${GITLAB_BACKUP_NAME}"
+      CLEAR_KEY_FILE="./.test/backups/$${GITLAB_BACKUP_NAME}_key.bin"
+      ENC_KEY_FILE="./.test/backups/$${GITLAB_BACKUP_NAME}_key.bin.enc"
+
+      openssl rsautl -decrypt -inkey ${var.gitlab_backup_priv_key_file} -in $${ENC_KEY_FILE} -out $${CLEAR_KEY_FILE}
+      openssl enc -d -aes-256-cbc -in ./.test/backups/$${GITLAB_BACKUP_NAME}_gitlab-secrets.json.enc -out ./.test/backups/$${GITLAB_BACKUP_NAME}_gitlab-secrets.json -pass file:$${CLEAR_KEY_FILE}
+
+      docker exec $CONTID cat /etc/gitlab/gitlab-secrets.json > ./.test/backups/$${GITLAB_BACKUP_NAME}_gitlab-secrets.orig.json
+      diff ./.test/backups/$${GITLAB_BACKUP_NAME}_gitlab-secrets.json ./.test/backups/$${GITLAB_BACKUP_NAME}_gitlab-secrets.orig.json
 EOF
   }
 

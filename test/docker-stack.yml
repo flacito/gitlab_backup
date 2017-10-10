@@ -7,12 +7,20 @@ networks:
   frontend:
     driver: "overlay"
 
+secrets:
+  gitlab_backup_pub_key:
+    external: true
+
 services:
   gitlab:
     image: gitlab/gitlab-ee:latest
     restart: always
     depends_on:
       - postgresql
+    secrets:
+    - source: gitlab_backup_pub_key
+      target: gitlab_backup_pub_key.pem
+      mode: 0440
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://localhost:8500'
@@ -54,7 +62,7 @@ services:
       disable: true
 
   backup:
-    image: flacito/gitlab_backup:latest
+    image: localtest/gitlab_backup:latest
     restart: always
     depends_on:
       - gitlab
