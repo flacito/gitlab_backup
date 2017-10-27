@@ -1,7 +1,14 @@
 set -e
 
+BD=7
+if [[ -z "${GITLAB_BACKUP_DEPTH}" ]]; then
+  echo "you didn't specify a GITLAB_BACKUP_DEPTH environment variable. Will use the default and keep the latest ${BD} backups."
+  GITLAB_BACKUP_DEPTH=$BD
+fi
+
 echo "export DOCKER_STACK_NAME=$DOCKER_STACK_NAME" > /container/backup.env
 echo "export DOCKER_GITLAB_CONTAINER_NAME=$DOCKER_GITLAB_CONTAINER_NAME" >> /container/backup.env
+echo "export GITLAB_BACKUP_DEPTH=$GITLAB_BACKUP_DEPTH" >> /container/backup.env
 echo "configured Docker enviornment for GitLab backups"
 cat /container/backup.env
 

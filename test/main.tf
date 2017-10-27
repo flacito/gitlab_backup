@@ -1,6 +1,6 @@
-variable docker_stack_name { default = "testglback" }
-variable gitlab_backup_priv_key_file { default = "~/.gitlab/id_rsa.pem" }
-variable gitlab_backup_pub_key_file { default = "~/.gitlab/id_rsa.pub.pem" }
+variable "docker_stack_name" { default = "testglback" }
+variable "gitlab_backup_priv_key_file" { default = "~/.gitlab/id_rsa.pem" }
+variable "gitlab_backup_pub_key_file" { default = "~/.gitlab/id_rsa.pub.pem" }
 
 resource "null_resource" "docker_build" {
 
@@ -71,8 +71,8 @@ resource "null_resource" "testit" {
       counter=1
       until curl -s -f  http://localhost:8500/help
       do
-        printf 'gitlab not online yet, sleeping 5 seconds...'
-        sleep 5
+        printf 'gitlab not online yet, waiting...'
+        sleep 15
         counter=$((counter+5))
 
         if [ "$counter" -gt "600" ]
@@ -86,8 +86,8 @@ resource "null_resource" "testit" {
       CONTID=$(docker ps -qf "name=${var.docker_stack_name}_gitlab" -f "status=running")
       echo "CONTID=$${CONTID}"
 
-      echo "GitLab backup container $${CONTID} online. Sleeping 65 seconds to wait for a backup to take place."
-      sleep 65
+      echo "GitLab backup container $${CONTID} online. Sleeping 4 minutes to wait for backup depth to fill."
+      sleep 240
       mkdir -p ./.test
       docker cp $CONTID:/var/opt/gitlab/backups ./.test
       set -e
@@ -95,6 +95,15 @@ resource "null_resource" "testit" {
       ls ./.test/backups/*.tar
       printf 'GitLab has backups!'
 
+      # Make sure our GITLAB_BACKUP_DEPTH is being honored
+      ACTUAL_DEPTH=$(ls -1 ./.test/backups/*.tar | wc -l | xargs)
+      if [[ $ACTUAL_DEPTH -ne 2 ]]
+      then
+        echo "Error. File depth is incorrect for backups.  It should be 2 but is $${ACTUAL_DEPTH}."
+        exit -1
+      fi
+
+      # Make sure our backups are indeed valid
       GITLAB_BACKUP_FILE_LISTING=$(ls -Art ./.test/backups/*.tar | tr '\n' '\0' | xargs -0 -n 1 | tail -n 1)
       GITLAB_BACKUP_NAME="$${GITLAB_BACKUP_FILE_LISTING##*/}"
       echo "Testing $${GITLAB_BACKUP_NAME}"

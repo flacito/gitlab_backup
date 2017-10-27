@@ -71,6 +71,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
+      GITLAB_BACKUP_DEPTH: 2
       DOCKER_STACK_NAME: testglback
       GITLAB_BACKUP_CRON_SCHEDULE: '* * * * *'
       DOCKER_GITLAB_CONTAINER_NAME: gitlab

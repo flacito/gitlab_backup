@@ -1,6 +1,6 @@
 
 stages:
-  - test
+  # - test
   - publish
 
 variables:
@@ -8,19 +8,19 @@ variables:
 services:
   - docker:dind
 
-test:
-  stage: test
-  image: docker
-  before_script:
-    - docker info
-    - apk update && apk add ca-certificates && update-ca-certificates && apk add openssl && apk add curl
-    - wget --no-check-certificate -O ./terraform.zip https://releases.hashicorp.com/terraform/0.10.6/terraform_0.10.6_linux_amd64.zip?_ga=2.64839145.739266491.1506689304-1411664957.1503690670
-    - unzip -d ./test ./terraform.zip
-  script:
-    - cd ./test
-    - ./terraform init
-    - ./terraform apply
-    - ./terraform destroy -force
+# test:
+#   stage: test
+#   image: docker
+#   before_script:
+#     - docker info
+#     - apk update && apk add ca-certificates && update-ca-certificates && apk add openssl && apk add curl
+#     - wget --no-check-certificate -O ./terraform.zip https://releases.hashicorp.com/terraform/0.10.6/terraform_0.10.6_linux_amd64.zip?_ga=2.64839145.739266491.1506689304-1411664957.1503690670
+#     - unzip -d ./test ./terraform.zip
+#   script:
+#     - cd ./test
+#     - ./terraform init
+#     - ./terraform apply
+#     - ./terraform destroy -force
 
 publish:
   stage: publish
