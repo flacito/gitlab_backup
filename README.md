@@ -15,13 +15,20 @@ Stack.  You can view all the details of this in the test directory's code.
 
 ## Configuration for the container
 
-_Required Container Environment Variables_
+_Required_
+
+Container Environment Variables
 
 * DOCKER_STACK_NAME: the name you give your Docker stack when you start it.
 * DOCKER_GITLAB_CONTAINER_NAME: the name of your container for GitLab in your
   Docker compose file.
 
+Docker secret
+
+* Public key file for encrypting the GitLab secrets file (GitLab backup documentation discusses this at the [beginning here](https://docs.gitlab.com/omnibus/settings/backups.html#separate-configuration-backups-from-application-data)). For example, create it from a file:  `docker secret create {docker stack name}_backup_pub_key {GitLab backup public key file}`
+
 _Optional_
+* GITLAB_BACKUP_DEPTH: the number of backups to keep on the system. Defaults to 7.
 * CRON_SCHEDULE: the cron schedule to use for determining the periodicity of
   the backup.  By default the container will use daily `0 0 * * *`. Cron is
   [well documented here](https://en.wikipedia.org/wiki/Cron#Overview).
