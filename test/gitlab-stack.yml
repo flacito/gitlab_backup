@@ -5,21 +5,23 @@ volumes:
 
 networks:
   frontend:
-    driver: "overlay"
+    external: true
 
 secrets:
   gitlab_backup_pub_key:
+    external: true
+  artifactory_api_key:
     external: true
 
 services:
   gitlab:
     image: gitlab/gitlab-ee:latest
-    restart: always
-    depends_on:
-      - postgresql
     secrets:
     - source: gitlab_backup_pub_key
       target: gitlab_backup_pub_key.pem
+      mode: 0440
+    - source: artifactory_api_key
+      target: artifactory_api_key
       mode: 0440
     environment:
       GITLAB_OMNIBUS_CONFIG: |
@@ -63,9 +65,14 @@ services:
 
   backup:
     image: localtest/gitlab_backup:latest
-    restart: always
+    external_links:
+     - artifactory_artifactory
     depends_on:
       - gitlab
+    secrets:
+    - source: artifactory_api_key
+      target: artifactory_api_key
+      mode: 0440
     networks:
       - frontend
     volumes:
@@ -75,5 +82,12 @@ services:
       DOCKER_STACK_NAME: testglback
       GITLAB_BACKUP_CRON_SCHEDULE: '* * * * *'
       DOCKER_GITLAB_CONTAINER_NAME: gitlab
+
+      # Note: Artifactory configured in a seperate stack file as an example
+      # and for testing.
+      ARTIFACTORY_UPLOAD: 'true'
+      ARTIFACTORY_PATH: 'example-repo-local'
+      ARTIFACTORY_API_KEY_PATH: '/run/secrets/artifactory_api_key'
+      ARTIFACTORY_SERVER_URL: 'http://artifactory:8081/artifactory'
     healthcheck:
       disable: true

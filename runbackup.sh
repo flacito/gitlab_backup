@@ -2,6 +2,8 @@
 set -e
 set -x
 
+source /backup.env
+
 # Run GitLab backup process
 gitlab-rake gitlab:backup:create
 
@@ -18,9 +20,9 @@ rm ${CLEAR_KEY_FILE}
 
 # Prune the backups
 BD=7
-if [[ "${1}" ]]; then
-  echo "You specified a GitLab backup depth of ${1} as an argument on the command line."
-  BD=$1
+if [[ "${GITLAB_BACKUP_DEPTH}" ]]; then
+  echo "You specified a GitLab backup depth of ${GITLAB_BACKUP_DEPTH}."
+  BD=$GITLAB_BACKUP_DEPTH
 fi
 echo "backup_depth=${BD}"
 GBD=$(($BD+1))
@@ -38,3 +40,22 @@ ls -1t ${BACKUP_DIR}/*ee_gitlab_backup.tar_gitlab-secrets.json.enc | tail -n +${
 done
 
 ls -1tr $BACKUP_DIR
+
+# Upload to Artifactory if enabled
+if [ "$ARTIFACTORY_UPLOAD" = true ] ; then
+  # if ! [ -f /jfrog ]
+  # then
+  #   curl -fL https://getcli.jfrog.io | sh
+  #   mv ./jfrog /jfrog
+  # fi
+
+  echo "Uploading to Artifactory..."
+  /jfrog -v
+  /jfrog rt c rt-server --apikey "$(cat $ARTIFACTORY_API_KEY_PATH)" --url "${ARTIFACTORY_SERVER_URL}" --interactive false
+  /jfrog rt use rt-server
+  /jfrog rt u "${ENC_KEY_FILE}" $ARTIFACTORY_PATH
+  /jfrog rt u "${BACKUP_DIR}/${GITLAB_BACKUP_NAME}_gitlab-secrets.json.enc" $ARTIFACTORY_PATH
+  /jfrog rt u "${BACKUP_DIR}/${GITLAB_BACKUP_NAME}" $ARTIFACTORY_PATH
+  /jfrog rt c --interactive false delete rt-server
+  echo "...upload to Artifactory complete. ${GITLAB_BACKUP_NAME} files now in  ${ARTIFACTORY_PATH}."
+fi

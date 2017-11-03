@@ -9,6 +9,10 @@ fi
 echo "export DOCKER_STACK_NAME=$DOCKER_STACK_NAME" > /container/backup.env
 echo "export DOCKER_GITLAB_CONTAINER_NAME=$DOCKER_GITLAB_CONTAINER_NAME" >> /container/backup.env
 echo "export GITLAB_BACKUP_DEPTH=$GITLAB_BACKUP_DEPTH" >> /container/backup.env
+echo "export ARTIFACTORY_UPLOAD=$ARTIFACTORY_UPLOAD" >> /container/backup.env
+echo "export ARTIFACTORY_API_KEY_PATH=$ARTIFACTORY_API_KEY_PATH" >> /container/backup.env
+echo "export ARTIFACTORY_SERVER_URL=$ARTIFACTORY_SERVER_URL" >> /container/backup.env
+echo "export ARTIFACTORY_PATH=$ARTIFACTORY_PATH" >> /container/backup.env
 echo "configured Docker enviornment for GitLab backups"
 cat /container/backup.env
 

@@ -1,0 +1,27 @@
+version: '3.3'
+
+networks:
+  frontend:
+    external: true
+
+volumes:
+  artifactory_data:
+
+services:
+  artifactory:
+    image: docker.bintray.io/jfrog/artifactory-oss:latest
+    networks:
+      - frontend
+    volumes:
+      - type: volume
+        source: artifactory_data
+        target: /var/opt/jfrog/artifactory
+        restart: always
+    environment:
+      # Need the extra memory or Arty will repetitively crash
+      - EXTRA_JAVA_OPTIONS=-Xmx2g
+    ports:
+      - target: 8081
+        published: 8501
+        protocol: tcp
+        mode: host
