@@ -47,5 +47,5 @@ Docker Secret
 
 * If ARTIFACTORY_UPLOAD is true, create a Docker secret that is the API key string and use it in your Docker stack config. The file path for the secret will then be used on the JFrog CLI calls. For example,  `echo 'your API key string here, not this text' | docker secret create artifactory_api_key -`, then use `/run/secrets/artifactory_api_key` if that is how you are placing the API key secret file in your Docker stack. Then put `/run/secrets/artifactory_api_key` in the `ARTIFACTORY_API_KEY_PATH` environment variable.
 
-An [example stack configuration](https://gitlab.com/bcb-devops/gitlab_backup/blob/master/test/gitlab-stack.yml)
+An [example stack configuration](https://github.com/flacito/gitlab_backup/tree/master/test)
 that we use to test the image on our CI server can be viewed here.
