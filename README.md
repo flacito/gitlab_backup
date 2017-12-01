@@ -42,6 +42,7 @@ Container Environment Variables
 * ARTIFACTORY_PATH: if ARTIFACTORY_UPLOAD is true, this is the path on the Artifactory server that the [JFrog CLI](https://www.jfrog.com/getcli/) will use.
 * ARTIFACTORY_API_KEY_PATH: if ARTIFACTORY_UPLOAD is true, this is the API key file path (it is in a file to support Docker secrets), that the [JFrog CLI](https://www.jfrog.com/getcli/) will use.
 * ARTIFACTORY_SERVER_URL: if ARTIFACTORY_UPLOAD is true, this is the server URL that the [JFrog CLI](https://www.jfrog.com/getcli/) will use.
+* ARTIFACTORY_USE_MAVEN_SNAPSHOT: if ARTIFACTORY_USE_MAVEN_SNAPSHOT is true, the backup process will package the backup, secrets, and key into a tarball and use Maven's snapshot version scheme.  This is useful for automatically deleting old backups from Artifactory.
 
 Docker Secret
 

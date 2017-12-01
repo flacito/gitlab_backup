@@ -89,5 +89,6 @@ services:
       ARTIFACTORY_PATH: 'example-repo-local'
       ARTIFACTORY_API_KEY_PATH: '/run/secrets/artifactory_api_key'
       ARTIFACTORY_SERVER_URL: 'http://artifactory:8081/artifactory'
+      ARTIFACTORY_USE_MAVEN_SNAPSHOT: 'true'
     healthcheck:
       disable: true

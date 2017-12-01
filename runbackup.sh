@@ -39,8 +39,6 @@ ls -1t ${BACKUP_DIR}/*ee_gitlab_backup.tar_gitlab-secrets.json.enc | tail -n +${
   rm -f "$f"
 done
 
-ls -1tr $BACKUP_DIR
-
 # Upload to Artifactory if enabled
 if [ "$ARTIFACTORY_UPLOAD" = true ] ; then
   # if ! [ -f /jfrog ]
@@ -49,13 +47,26 @@ if [ "$ARTIFACTORY_UPLOAD" = true ] ; then
   #   mv ./jfrog /jfrog
   # fi
 
+  ARTY_TAR_NAME="gitlab_backup-${GITLAB_BACKUP_NAME}"
+  if [ "$ARTIFACTORY_USE_MAVEN_SNAPSHOT" = true ] ; then
+    ARTY_TAR_NAME="gitlab_backup.1.0.0-${GITLAB_BACKUP_NAME}-SNAPSHOT.tar"
+  fi
+
+  cd ${BACKUP_DIR}
+  echo "./${GITLAB_BACKUP_NAME}" > $GITLAB_BACKUP_NAME.files.txt
+  echo "./${GITLAB_BACKUP_NAME}_key.bin.enc" >> $GITLAB_BACKUP_NAME.files.txt
+  echo "./${GITLAB_BACKUP_NAME}_gitlab-secrets.json.enc" >> $GITLAB_BACKUP_NAME.files.txt
+
+  tar -c -f "${ARTY_TAR_NAME}" -T $GITLAB_BACKUP_NAME.files.txt
+
   echo "Uploading to Artifactory..."
   /jfrog -v
   /jfrog rt c rt-server --apikey "$(cat $ARTIFACTORY_API_KEY_PATH)" --url "${ARTIFACTORY_SERVER_URL}" --interactive false
   /jfrog rt use rt-server
-  /jfrog rt u "${ENC_KEY_FILE}" $ARTIFACTORY_PATH
-  /jfrog rt u "${BACKUP_DIR}/${GITLAB_BACKUP_NAME}_gitlab-secrets.json.enc" $ARTIFACTORY_PATH
-  /jfrog rt u "${BACKUP_DIR}/${GITLAB_BACKUP_NAME}" $ARTIFACTORY_PATH
+  /jfrog rt u "./${ARTY_TAR_NAME}" $ARTIFACTORY_PATH
   /jfrog rt c --interactive false delete rt-server
   echo "...upload to Artifactory complete. ${GITLAB_BACKUP_NAME} files now in  ${ARTIFACTORY_PATH}."
+  rm "${ARTY_TAR_NAME}"
 fi
+
+ls -1tr $BACKUP_DIR

@@ -206,9 +206,8 @@ resource "null_resource" "test_backups_in_arty" {
       GITLAB_BACKUP_FILE_LISTING=$(ls -Art ./.test/backups/*.tar | tr '\n' '\0' | xargs -0 -n 1 | tail -n 1)
       GITLAB_BACKUP_NAME="$${GITLAB_BACKUP_FILE_LISTING##*/}"
       echo "Testing $${GITLAB_BACKUP_NAME} for Arty"
-
-      # Clean up
-      ./.test/jfrog rt dl example-repo-local/$${GITLAB_BACKUP_NAME} ./.test/$${GITLAB_BACKUP_NAME}
+      ./.test/jfrog rt dl example-repo-local/gitlab_backup.1.0.0-$${GITLAB_BACKUP_NAME}-SNAPSHOT.tar ./.test/gitlab_backup.1.0.0-$${GITLAB_BACKUP_NAME}-SNAPSHOT.tar
+      tar zxf ./.test/gitlab_backup.1.0.0-$${GITLAB_BACKUP_NAME}-SNAPSHOT.tar -C ./.test
       diff ./.test/backups/$${GITLAB_BACKUP_NAME} ./.test/$${GITLAB_BACKUP_NAME}
       ./.test/jfrog rt c --interactive false delete rt-server
 EOF

@@ -13,6 +13,7 @@ echo "export ARTIFACTORY_UPLOAD=$ARTIFACTORY_UPLOAD" >> /container/backup.env
 echo "export ARTIFACTORY_API_KEY_PATH=$ARTIFACTORY_API_KEY_PATH" >> /container/backup.env
 echo "export ARTIFACTORY_SERVER_URL=$ARTIFACTORY_SERVER_URL" >> /container/backup.env
 echo "export ARTIFACTORY_PATH=$ARTIFACTORY_PATH" >> /container/backup.env
+echo "export ARTIFACTORY_USE_MAVEN_SNAPSHOT=$ARTIFACTORY_USE_MAVEN_SNAPSHOT" >> /container/backup.env
 echo "configured Docker enviornment for GitLab backups"
 cat /container/backup.env
 
